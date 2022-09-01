@@ -16,7 +16,7 @@ def uncertainty_age(age):
 
 def uncertainty_income(income):
     '''estimate uncertainty based on income'''
-    return 0
+    return .5*income
 
 
 def uncertainty_gender(gender):
@@ -31,7 +31,8 @@ def uncertainty_race(race):
 
 def uncertainty_edu(edu):
     '''estimate uncertainty based on education'''
-    return 0
+    # here I'm incresing uncertainty with higher education
+    return (edu[:,0] + 2*edu[:,1] + 4*edu[:,2] + 8*edu[:,3]).reshape(-1,1) / 16
 
 
 def uncertainty_marital(marital):
@@ -53,8 +54,9 @@ def besci_loss(x, y, z):
     u_marital = uncertainty_marital(d_marital)
 
     # compute besci-loss
-    u = 1 - u_age * u_income * u_gender * u_race * u_edu * u_marital
-    loss = tf.reduce_mean(-u * tf.reduce_sum(y * tf.math.log(z), axis=1))
+    certainty = (1 - u_age) * (1 - u_income) * (1 - u_gender) * (1 - u_race) * (1 - u_edu) * (1 - u_marital)
+    ##loss = tf.reduce_mean(-certainty * tf.reduce_sum(y * tf.math.log(z), axis=1))
+    loss = tf.reduce_mean(certainty * tf.square(y - z))
 
     return loss
 

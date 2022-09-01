@@ -38,6 +38,7 @@ def load_data(data_file, validation_split=.1):
                  + data['num_meals_not_home']\
                  + data['num_meals_fast_food'] > 90].index, inplace=True)
     data['num_home_cook'] = 90 - data['num_meals_not_home']\
+                               - data['num_meals_fast_food']\
                                - data['num_ready_foods_30_days']\
                                - data['num_frozen_foods_30_days']
 
@@ -61,6 +62,7 @@ def setup_model(input_size, output_size):
     fix_random_seed()
     model = tf.keras.Sequential([
         tf.keras.layers.InputLayer(input_shape=input_size),
+        ##tf.keras.layers.Dense(64, activation='relu'),
         tf.keras.layers.Dense(32, activation='relu'),
         tf.keras.layers.Dense(output_size, activation='softmax')
     ])
@@ -106,14 +108,14 @@ def train_model_ml(model, params):
 
     # compile and train ml-model
     model.compile(optimizer=optimizer,
-                  loss=tf.keras.losses.CategoricalCrossentropy(),
-                  metrics=tf.keras.metrics.MeanSquaredError())
+                  loss=tf.keras.losses.MeanSquaredError(),
+                  metrics=tf.keras.metrics.CategoricalCrossentropy())
     tqdm_callback = tfa.callbacks.TQDMProgressBar(show_epoch_progress=False)
     history = model.fit(x_tr, y_tr, batch_size=params['batch_size'], epochs=params['num_epoch'],
                         validation_data=(x_ts,y_ts), verbose=0, callbacks=[tqdm_callback])
 
     return (history.history['loss'], history.history['val_loss']),\
-           (history.history['mean_squared_error'], history.history['val_mean_squared_error'])
+           (history.history['categorical_crossentropy'], history.history['val_categorical_crossentropy'])
 
 
 def train_model_bs(model, params):
@@ -123,8 +125,8 @@ def train_model_bs(model, params):
 
     # compile and train bs-model
     model.compile(optimizer=optimizer,
-                  loss=tf.keras.losses.CategoricalCrossentropy(),
-                  metrics=tf.keras.metrics.MeanSquaredError())
+                  loss=tf.keras.losses.MeanSquaredError(),
+                  metrics=tf.keras.metrics.CategoricalCrossentropy())
     losses_tr, losses_ts = [], []
     metrics_tr, metrics_ts = [], []
     for epoch in tqdm(range(params['num_epoch']), desc='Training'):
@@ -148,8 +150,8 @@ def train_model_bs(model, params):
         # compute loss over the epoch
         losses_tr.append(np.mean(batch_losses))
         losses_ts.append(besci_loss(x_ts, y_ts, model(x_ts)).numpy())
-        metrics_tr.append(tf.keras.metrics.MeanSquaredError()(y_tr, model(x_tr)))
-        metrics_ts.append(tf.keras.metrics.MeanSquaredError()(y_ts, model(x_ts)))
+        metrics_tr.append(tf.keras.metrics.CategoricalCrossentropy()(y_tr, model(x_tr)))
+        metrics_ts.append(tf.keras.metrics.CategoricalCrossentropy()(y_ts, model(x_ts)))
 
     return (losses_tr, losses_ts), (metrics_tr, metrics_ts)
 
