@@ -1,8 +1,5 @@
 '''
     here we define the behavioral loss function that is used by 'Behavioral ML'
-
-    !!! don't forget to change it if we change our data encoding !!!
-
 '''
 
 import numpy as np
@@ -11,39 +8,44 @@ import tensorflow as tf
 
 def uncertainty_age(age):
     '''estimate uncertainty based on age'''
-    return .5*age
+    # uncertainty increases with age
+    return .5 * age
 
 
 def uncertainty_income(income):
     '''estimate uncertainty based on income'''
-    return .5*income
+    # uncertainty does not depend on income
+    return 0
 
 
 def uncertainty_gender(gender):
     '''estimate uncertainty based on gender'''
-    return 0
+    # uncertainty is higher for females
+    return .25 * (1 - gender)
 
 
 def uncertainty_race(race):
     '''estimate uncertainty based on race'''
+    # uncertainty does not depend on race
     return 0
 
 
 def uncertainty_edu(edu):
     '''estimate uncertainty based on education'''
-    # here I'm incresing uncertainty with higher education
-    return (edu[:,0] + 2*edu[:,1] + 4*edu[:,2] + 8*edu[:,3]).reshape(-1,1) / 16
+    # uncertainty decreases with education level
+    return .25 * (1 - edu)
 
 
 def uncertainty_marital(marital):
     '''estimate uncertainty based on marital status'''
-    return 0
+    # uncertainty is higher for single people
+    return .5 * (marital[:,0] + marital[:,1]).reshape(-1,1)
 
 
 def besci_loss(x, y, z):
     '''behavioral-science-informed loss function'''
     # extract demographic features -- they are hardcoded and this is bad
-    d_age, d_income, d_gender, d_race, d_edu, d_marital = np.split(x, [1,2,3,8,12], axis=1)
+    d_age, d_income, d_gender, d_edu, d_race, d_marital = np.split(x, [1,2,3,4,8], axis=1)
 
     # compute uncertainties based on demographic features
     u_age = uncertainty_age(d_age)
@@ -55,7 +57,6 @@ def besci_loss(x, y, z):
 
     # compute besci-loss
     certainty = (1 - u_age) * (1 - u_income) * (1 - u_gender) * (1 - u_race) * (1 - u_edu) * (1 - u_marital)
-    ##loss = tf.reduce_mean(-certainty * tf.reduce_sum(y * tf.math.log(z), axis=1))
     loss = tf.reduce_mean(certainty * tf.square(y - z))
 
     return loss
