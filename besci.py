@@ -8,8 +8,8 @@ import tensorflow as tf
 
 def uncertainty_age(age):
     '''estimate uncertainty based on age'''
-    # uncertainty increases with age
-    return .5 * age
+    # uncertainty decreases with age
+    return .5 * (1 - age)
 
 
 def uncertainty_income(income):
@@ -20,8 +20,8 @@ def uncertainty_income(income):
 
 def uncertainty_gender(gender):
     '''estimate uncertainty based on gender'''
-    # uncertainty is higher for females
-    return .25 * (1 - gender)
+    # uncertainty is higher for males
+    return .25 * gender
 
 
 def uncertainty_race(race):
@@ -38,8 +38,8 @@ def uncertainty_edu(edu):
 
 def uncertainty_marital(marital):
     '''estimate uncertainty based on marital status'''
-    # uncertainty is higher for single people
-    return .5 * (marital[:,0] + marital[:,1]).reshape(-1,1)
+    # uncertainty is higher for married people
+    return .5 * (1 - marital[:,0] - marital[:,1]).reshape(-1,1)
 
 
 def besci_loss(x, y, z):

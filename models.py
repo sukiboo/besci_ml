@@ -31,6 +31,7 @@ def normalize(data):
     '''normalize the provided data to be on the same scale'''
     return np.array(data) / data[0]
 
+
 def train_model_ml(model, params, train_data, test_data):
     '''train model with conventional machine learning'''
     x_tr, y_tr = train_data
