@@ -105,11 +105,11 @@ def synthesize_demographics(num, seed):
     # generate random values
     np.random.seed(seed)
     dems = {'age': np.random.rand(num),
-             'income': np.random.rand(num),
-             'gender_male': np.random.randint(2, size=num),
-             'education': np.random.randint(5, size=num) / 4.,
-             'race': np.random.randint(6, size=num),
-             'marital_status': np.random.randint(3, size=num)
+            'income': np.random.rand(num),
+            'gender_male': np.random.randint(2, size=num),
+            'education': np.random.randint(5, size=num) / 4.,
+            'race': np.random.randint(6, size=num),
+            'marital_status': np.random.randint(3, size=num)
             }
 
     # encode synthetic people
